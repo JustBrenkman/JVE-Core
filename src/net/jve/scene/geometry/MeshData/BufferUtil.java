@@ -1,5 +1,8 @@
 package net.jve.scene.geometry.MeshData;
 
+import net.jve.math.Vector3f;
+import org.lwjgl.BufferUtils;
+
 import java.nio.FloatBuffer;
 
 /**
@@ -47,13 +50,33 @@ public class BufferUtil {
      * @param data array of float primitives to place into a new FloatBuffer
      */
     public static FloatBuffer createFloatBuffer(float... data) {
-        if (data == null) {
-            return null;
-        }
-        FloatBuffer buff = createFloatBuffer(data.length);
+
+        FloatBuffer buff = BufferUtils.createFloatBuffer(data.length * 3);
         buff.clear();
-        buff.put(data);
+        for (int i = 0; i < data.length; i++) {
+            buff.put(data[i]);
+            System.out.println("Buff: " + buff.get(i));
+        }
         buff.flip();
         return buff;
+    }
+
+    public static FloatBuffer createFloatBuffer(int size)
+    {
+        return BufferUtils.createFloatBuffer(size);
+    }
+
+    public static FloatBuffer createFlippedBuffer(Vector3f[] vertices) {
+        FloatBuffer buffer = createFloatBuffer(vertices.length * 3);
+
+        for (int i = 0; i < vertices.length; i++) {
+            buffer.put(vertices[i].getX());
+            buffer.put(vertices[i].getY());
+            buffer.put(vertices[i].getZ());
+        }
+
+        buffer.flip();
+
+        return buffer;
     }
 }
