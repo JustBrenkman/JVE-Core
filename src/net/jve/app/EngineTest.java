@@ -31,9 +31,12 @@ package net.jve.app;
 
 import net.jve.math.Vertex3f;
 import net.jve.render.OpenGLHelper;
+import net.jve.render.shader.Shader;
 import net.jve.scene.geometry.Mesh;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.lwjgl.opengl.GL11.glColor3f;
 
 /**
  * Created by ben on 06/05/14.
@@ -60,13 +63,19 @@ public class EngineTest extends Application {
 
         mesh = new Mesh();
 
-        mesh.addVerticies(new Vertex3f(0, 0, 0), new Vertex3f(0, 1, 0), new Vertex3f(1, 0, 0));
+        mesh.addVerticies(new Vertex3f(0, 0, 0), new Vertex3f(0, 1, 0), new Vertex3f(1, 0, 0), new Vertex3f(0, 0, 0), new Vertex3f(0, -1, 0), new Vertex3f(-1, 0, 0));
         mesh.compile();
+
+        Shader shader = new Shader();
+
+        shader.loadProgram("basic");
+
+        shader.compileShader();
     }
 
     @Override
     public void render() {
-//        glColor3f(0.5f,0.5f,1.0f);
+        glColor3f(0.5f,0.5f,1.0f);
         jve.getRenderEngine().renderMesh(mesh);
     }
 

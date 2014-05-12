@@ -27,78 +27,33 @@
  *  either expressed or implied, of the FreeBSD Project.
  */
 
-package net.jve.core;
-
-import net.jve.app.Application;
-import net.jve.core.lwjgl.LWJGLDisplay;
-import net.jve.core.util.PathManager;
-import net.jve.render.RenderEngine;
-import org.lwjgl.opengl.Display;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package net.jve.render.shader;
 
 /**
- * Created by ben on 06/05/14.
+ * Created by ben on 10/05/14.
  *
- * JVE-Core : Core class for the Java Voxel Engine
+ * Enum for shader types
+ *
+ * VERTEX - vertex shader
+ *
+ * FRAGMENT - fragment shader
+ *
+ * GEOMETRY - geometry shader
  */
-public class JVE {
+public enum ShaderType {
+    VERTEX(0),
 
-    public Logger logger = LoggerFactory.getLogger(JVE.class);
+    FRAGMENT(1),
 
-    private RenderEngine renderEngine;
-    private LWJGLDisplay display;
+    GEOMETRY(2);
 
-    private Application app;
+    private int id;
 
-    public JVE(RenderEngine renderEngine, Application application) {
-        this.setRenderEngine(renderEngine);
-        this.app = application;
-        PathManager.initialize();
+    private ShaderType(int id) {
+        this.id = id;
     }
 
-    public void createDisplay() {
-        if (display == null)
-            display = new LWJGLDisplay();
-
-        if (display.isCreated()) {
-            logger.error("Display already created");
-            return;
-        }
-
-        display.createDisplay();
-
-        initGL();
-    }
-
-    public void mainLoop() {
-        while(!Display.isCloseRequested()) {
-
-            app.update();
-
-            renderEngine.clearBuffers();
-
-            app.render();
-
-            Display.update();
-        }
-        display.destroy();
-    }
-
-    public RenderEngine getRenderEngine() {
-        return renderEngine;
-    }
-
-    public void setRenderEngine(RenderEngine renderEngine) {
-        this.renderEngine = renderEngine;
-    }
-
-    public void initGL() {
-        if (renderEngine == null) {
-            logger.warn("Opengl cannot be initialized");
-            return;
-        }
-
-        renderEngine.initGL();
+    public int getID() {
+        return id;
     }
 }

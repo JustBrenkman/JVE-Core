@@ -29,139 +29,130 @@
 
 package net.jve.render.shader;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.jve.core.util.PathManager;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-
-import static org.lwjgl.opengl.GL20.glCreateProgram;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.ArrayList;
 
 /**
- * Created by ben on 08/05/14.
+ * Created by ben on 09/05/14.
  */
-public final class Shader {
+public class Shader {
 
-    public Logger logger = LoggerFactory.getLogger(Shader.class);
-    /**
-     * Maps loaded shaders
-     */
-    private static LinkedList<ShaderResource> shadersList;
+    public ShaderProgram shaderProgram;
 
-    /**
-     * Maps uniforms to name
-     */
-    private HashMap<String, Uniform> uniforms = new HashMap<String, Uniform>();
-
-    /**
-     * Maps attributes
-     */
-    private HashMap<String, Uniform> attributes = new HashMap<String, Uniform>();
-
-    /**
-     * Enum for shader types
-     *
-     * VERTEX - vertex shader
-     *
-     * FRAGMENT - fragment shader
-     *
-     * GEOMETRY - geometry shader
-     */
-    public enum ShaderType {
-        VERTEX,
-
-        FRAGMENT,
-
-        GEOMETRY,
-    }
-
-    public class ShaderResource {
-
-        ShaderType type;
-        String language;
-        String name;
-        String source;
-        String defines;
-        int id;
-
-        public ShaderResource(ShaderType type) {
-            super();
-            this.type = type;
-
-            this.id = glCreateProgram();
-
-            if (id == -1) {
-                logger.error("Shader creation failed: Could not find valid memory location in VRAM");
-                System.exit(1);
-            }
-
-            if (type == null) {
-                throw new IllegalArgumentException("ShaderType cannot be null");
-            }
-        }
-
-        public ShaderResource() {
-            super();
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public void getType(ShaderType type) {
-            this.type = type;
-        }
-
-        public void setLanguage(String language) {
-            this.language = language;
-        }
-
-        public String getLanguage() {
-            return language;
-        }
-
-        public void setSource(String source) {
-            if (source == null)
-                throw new IllegalArgumentException("Shader source cannot be null");
-
-            this.source = source;
-        }
-
-        public void setDefines(String defines) {
-            if (defines == null)
-                throw new IllegalArgumentException("Defines cannot be null");
-
-            this.defines = defines;
-        }
-
-        public String getSource() {
-            return source;
-        }
-
-        public String getDefines() {
-            return defines;
-        }
-    }
+    private ArrayList<String> vertexFileExtensions = new ArrayList<String>();
+    private ArrayList<String> fragmentFileExtensions = new ArrayList<String>();
+    private ArrayList<String> geometryFileExtensions = new ArrayList<String>();
 
     public Shader() {
-        shadersList = new LinkedList<ShaderResource>();
-        uniforms = new HashMap<String, Uniform>();
+        shaderProgram = new ShaderProgram();
+
+        addFileExtensions();
     }
 
-    public void addScource(ShaderType type, String name, String source, String defines, String language) {
-        ShaderResource resource = new ShaderResource(type);
+    /**
+     * Loads single source
+     * @param type type of shader
+     * @param loc location / filename of shader
+     */
+    private void loadShader(ShaderType type, String loc) {
 
-        resource.setSource(source);
-        resource.setName(name);
-        resource.setLanguage(language);
+        StringBuilder shaderSource = new StringBuilder();
+        BufferedReader shaderReader = null;
+        final String INCLUDE_DIRECTIVE = "#include";
 
-        if (defines != null)
-            resource.setDefines(defines);
+        try
+        {
+            shaderReader = new BufferedReader(new FileReader(PathManager.getLibraryPath() + "/shader/" + loc));
+            String line;
 
-        shadersList.add(resource);
+            while((line = shaderReader.readLine()) != null)
+            {
+                if(line.startsWith(INCLUDE_DIRECTIVE))
+                {
+                    shaderSource.append(loadShader(line.substring(INCLUDE_DIRECTIVE.length() + 2, line.length() - 1)));
+                }
+                else
+                    shaderSource.append(line).append("\n");
+            }
+
+            shaderReader.close();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        shaderProgram.addShaderSource(type, shaderSource.toString());
+//        return shaderSource.toString();
+    }
+
+    /**
+     * Loads single source
+     * @param loc location / filename of shader
+     */
+    private String loadShader(String loc) {
+        return null;
+    }
+
+    /**
+     * Loads a pair of shaders
+     * @param loc location / filename of shader
+     */
+    public void loadProgram(String loc) {
+
+        if (PathManager.fileExists(loc + ".vs"))
+            loadShader(ShaderType.VERTEX, loc + ".vs");
+
+        if (PathManager.fileExists(loc + ".fs"))
+            loadShader(ShaderType.FRAGMENT, loc + "fs");
+
+        ///////////////////////// EXTRA CODE ///////////////////////////////////
+
+//        String vertex;
+//        String fraqext;
+//
+//        for (String vertexFileExtension : vertexFileExtensions) {
+//            if (PathManager.fileExists(loc + vertexFileExtension)) {
+//                vertex = vertexFileExtension;
+//                break;
+//            }
+//        }
+//
+//        for (String fragmentFileExtension : fragmentFileExtensions) {
+//            if (PathManager.fileExists(loc + fragmentFileExtension)) {
+//                fraqext = fragmentFileExtension;
+//                break;
+//            }
+//        }
+
+        //////////////////////// EXTRA CODE /////////////////////////////////////
+    }
+
+
+    private void addFileExtensions() {
+        vertexFileExtensions.add("vs");
+        vertexFileExtensions.add("vert");
+
+        fragmentFileExtensions.add("fs");
+        fragmentFileExtensions.add("frag");
+
+        geometryFileExtensions.add("gs");
+        geometryFileExtensions.add("geom");
+    }
+
+    public void compileShader() {
+        shaderProgram.compileShaders();
+    }
+
+    public void bind() {
+
+    }
+
+    public void unbind() {
+
     }
 }
